@@ -1,4 +1,4 @@
-// src/components/PlaybackComponent.tsx
+// Dashboard-App/src/components/PlaybackComponent.tsx
 
 import React, { useState, useRef, useEffect } from 'react'
 import { Play, Pause, RotateCcw } from 'lucide-react'
@@ -20,7 +20,7 @@ const PlaybackComponent: React.FC<PlaybackComponentProps> = ({ filePath, onPlayS
     const fetchAudioFile = async () => {
       try {
         const { data, error } = await supabase.storage
-          .from('audio-recordings')
+          .from('audio-recordings') // Corrected bucket name
           .createSignedUrl(filePath, 3600) // URL valid for 1 hour
 
         if (error) throw error

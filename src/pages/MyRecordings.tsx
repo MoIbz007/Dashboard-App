@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Trash2, Play, Pause } from 'lucide-react'
 import { getRecordings, deleteRecording, Recording } from '../lib/supabaseService'
 // Remove the import for PlaybackComponent as it's not found

@@ -1,4 +1,37 @@
-import { supabase } from './supabaseClient'
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase URL or anon key. Please check your environment variables.')
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+export const initSupabase = async () => {
+  try {
+    const { data, error } = await supabase.from('meetings').select('count')
+    if (error) throw error
+    console.log('Supabase connection successful')
+
+    // Check if the 'recordings' bucket exists, create it if it doesn't
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
+    if (bucketsError) throw bucketsError
+
+    const recordingsBucketExists = buckets.some(bucket => bucket.name === 'recordings')
+    if (!recordingsBucketExists) {
+      const { data: newBucket, error: createBucketError } = await supabase.storage.createBucket('recordings', { public: false })
+      if (createBucketError) throw createBucketError
+      console.log('Created recordings bucket')
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error connecting to Supabase:', error)
+    return false
+  }
+}
 
 export interface Meeting {
   meeting_id?: number

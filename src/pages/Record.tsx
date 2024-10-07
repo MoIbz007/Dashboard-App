@@ -1,3 +1,5 @@
+// Dashboard-App/src/pages/Record.tsx
+
 import React, { useState, useRef, useEffect } from 'react'
 import { Mic, StopCircle } from 'lucide-react'
 import { useAuth } from '../components/AuthProvider'
@@ -57,14 +59,17 @@ const Record = () => {
   const handleRecordingStop = async () => {
     const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
     const fileName = `${uuidv4()}.webm`
-    const filePath = `audio-recordings/private/${user?.id}/${fileName}`
+    const filePath = `${user?.id}/${fileName}` // Corrected file path
 
     try {
       const { data, error: uploadError } = await supabase.storage
-        .from('recordings')
+        .from('audio-recordings') // Corrected bucket name
         .upload(filePath, audioBlob)
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        console.error('Upload Error:', uploadError.message)
+        throw uploadError
+      }
 
       const { data: recordingData, error: insertError } = await supabase
         .from('recordings')
@@ -74,17 +79,20 @@ const Record = () => {
           duration: recordingTime,
           name: recordingName || 'Untitled Recording',
         })
-        .select()  // This line is added to select the inserted data
+        .select()
 
-      if (insertError) throw insertError
+      if (insertError) {
+        console.error('Database Insert Error:', insertError.message)
+        throw insertError
+      }
 
       setSuccess('Recording saved successfully!')
       setRecordingName('')
       setRecordingTime(0)
       audioChunksRef.current = []
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving recording:', err)
-      setError('Failed to save recording. Please try again.')
+      setError(`Failed to save recording: ${err.message}. Please try again.`)
     }
   }
 
