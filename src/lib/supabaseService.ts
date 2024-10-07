@@ -148,3 +148,12 @@ export const deleteTranscript = async (transcript_id: number) => {
   const { error } = await supabase!.from('transcripts').delete().eq('transcript_id', transcript_id)
   if (error) throw error
 }
+
+// Placeholder function for chatbot API call
+export const getChatbotResponse = async (query: string): Promise<string> => {
+  checkSupabaseClient()
+  // TODO: Implement actual API call to Supabase function
+  // For now, we'll return a mock response
+  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+  return `This is a placeholder response to: "${query}". In the future, this will be replaced with an actual AI-generated response.`;
+}

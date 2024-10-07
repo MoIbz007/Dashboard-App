@@ -1,12 +1,13 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
-import { Home, Mic, FileText, Calendar, FileEdit, List, LogOut } from 'lucide-react'
+import { Home, Mic, FileText, Calendar, FileEdit, List, LogOut, MessageSquare } from 'lucide-react'
 import HomePage from './pages/HomePage'
 import MyRecordings from './pages/MyRecordings'
 import MyTranscripts from './pages/MyTranscripts'
 import MyCalendar from './pages/MyCalendar'
 import MyNotes from './pages/MyNotes'
 import Record from './pages/Record'
+import ChatbotPage from './pages/ChatbotPage'
 import Login from './pages/Login'
 import { AuthProvider, useAuth } from './components/AuthProvider'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -47,6 +48,7 @@ function AppContent() {
           <NavItem to="/calendar" icon={<Calendar />} text="My Calendar" />
           <NavItem to="/notes" icon={<FileEdit />} text="My Notes" />
           <NavItem to="/record" icon={<List />} text="Record" />
+          <NavItem to="/chatbot" icon={<MessageSquare />} text="Chatbot" />
         </ul>
         <div className="p-5">
           <button
@@ -69,6 +71,7 @@ function AppContent() {
           <Route path="/calendar" element={<ProtectedRoute><MyCalendar /></ProtectedRoute>} />
           <Route path="/notes" element={<ProtectedRoute><MyNotes /></ProtectedRoute>} />
           <Route path="/record" element={<ProtectedRoute><Record /></ProtectedRoute>} />
+          <Route path="/chatbot" element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
         </Routes>
       </main>
     </div>
