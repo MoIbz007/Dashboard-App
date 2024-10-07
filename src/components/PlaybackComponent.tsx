@@ -1,3 +1,5 @@
+// src/components/PlaybackComponent.tsx
+
 import React, { useState, useRef, useEffect } from 'react'
 import { Play, Pause, RotateCcw } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -18,7 +20,7 @@ const PlaybackComponent: React.FC<PlaybackComponentProps> = ({ filePath, onPlayS
     const fetchAudioFile = async () => {
       try {
         const { data, error } = await supabase.storage
-          .from('recordings')
+          .from('audio-recordings')
           .createSignedUrl(filePath, 3600) // URL valid for 1 hour
 
         if (error) throw error
@@ -26,24 +28,52 @@ const PlaybackComponent: React.FC<PlaybackComponentProps> = ({ filePath, onPlayS
         if (audioRef.current) {
           audioRef.current.src = data.signedUrl
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching audio file:', error)
-        setError('Failed to load audio file. Please try again later.')
+        if (error.message.includes('path not found')) {
+          setError('Audio file not found.')
+        } else {
+          setError('Failed to load audio file. Please try again later.')
+        }
       }
     }
 
     fetchAudioFile()
   }, [filePath])
 
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handlePlay = () => setIsPlaying(true)
+    const handlePause = () => setIsPlaying(false)
+    const handleEnded = () => {
+      setIsPlaying(false)
+      setCurrentTime(0)
+      onPlayStateChange(false)
+    }
+
+    audio.addEventListener('play', handlePlay)
+    audio.addEventListener('pause', handlePause)
+    audio.addEventListener('ended', handleEnded)
+
+    return () => {
+      audio.removeEventListener('play', handlePlay)
+      audio.removeEventListener('pause', handlePause)
+      audio.removeEventListener('ended', handleEnded)
+    }
+  }, [onPlayStateChange])
+
   const togglePlayPause = () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause()
       } else {
-        audioRef.current.play()
+        audioRef.current.play().catch((err) => {
+          console.error('Error playing audio:', err)
+          setError('Failed to play audio. Please try again.')
+        })
       }
-      setIsPlaying(!isPlaying)
-      onPlayStateChange(!isPlaying)
     }
   }
 
@@ -59,18 +89,14 @@ const PlaybackComponent: React.FC<PlaybackComponentProps> = ({ filePath, onPlayS
     }
   }
 
-  const handleEnded = () => {
-    setIsPlaying(false)
-    setCurrentTime(0)
-    onPlayStateChange(false)
-  }
-
   const handleRestart = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0
-      audioRef.current.play()
-      setIsPlaying(true)
-      onPlayStateChange(true)
+      audioRef.current.play().catch((err) => {
+        console.error('Error playing audio:', err)
+        setError('Failed to play audio. Please try again.')
+      })
+      // setIsPlaying(true) is handled by the 'play' event listener
     }
   }
 
@@ -90,7 +116,6 @@ const PlaybackComponent: React.FC<PlaybackComponentProps> = ({ filePath, onPlayS
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
-        onEnded={handleEnded}
       />
       <div className="flex items-center space-x-2">
         <button
@@ -112,7 +137,7 @@ const PlaybackComponent: React.FC<PlaybackComponentProps> = ({ filePath, onPlayS
       <div className="w-full mt-2 bg-gray-200 rounded-full h-2.5">
         <div
           className="bg-blue-600 h-2.5 rounded-full"
-          style={{ width: `${(currentTime / duration) * 100}%` }}
+          style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
         ></div>
       </div>
     </div>
