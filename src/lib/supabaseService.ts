@@ -52,6 +52,7 @@ export interface Recording {
   transcript_id?: number
   duration: number
   name?: string
+  tag?: string // Added tag property
 }
 
 export interface Transcript {

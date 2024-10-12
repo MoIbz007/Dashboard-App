@@ -121,28 +121,6 @@ This document details the architecture and implementation of **VoiceScribeApp**,
 2. **Audio Recording**: In-browser recording and storage.
 3. **Transcription**: Real-time using Deepgram API.
 4. **Summarization**: Generated from transcriptions via LLM.
-5. **Outlook Integration**: Meetings automatically associated with transcriptions.
-6. **Dashboard Management**: View, filter, and manage recordings and transcriptions.
-7. **Real-time Notifications**: Update users on transcription status.
-
-### 4.2. Secondary Features
-1. **User Profiles**: Manage profile information and settings.
-2. **Settings**: Notification preferences and integration configurations.
-3. **Analytics**: Usage statistics and keyword insights.
-4. **Export Functionality**: Download transcriptions in various formats.
-5. **Collaboration**: Share transcriptions with others.
-6. **Multi-language Support**: Transcribe in multiple languages.
-7. **Dark Mode**: User interface customization.
-
-## 5. Non-Functional Requirements
-1. **Scalability**: Handle increasing data without performance issues.
-2. **Performance**: Low latency and fast UI responsiveness.
-3. **Security**: Encrypt data in transit and at rest; protect against common vulnerabilities.
-4. **Reliability**: High availability and robust error handling.
-5. **Maintainability**: Modular codebase for easy updates.
-6. **Usability**: Intuitive design and accessibility compliance.
-7. **Compatibility**: Cross-platform and browser support.
-8. **Extensibility**: Designed for future feature additions.
 
 ## 6. Detailed Component Design
 ### 6.1. Backend (Supabase)
@@ -209,34 +187,24 @@ The application comprises several key pages, each serving distinct functionaliti
 - **Meetings**: Meeting details (user_id, title, date_time).
 
 ---
-<Feature Implementation>
-consider the following enhancements for future improvements:
+<ISSUE>
+The transcript page is not working as epected. The message "Failed to fetch transcriptions" is displayed.
+The issue seems to be with the connection of the backend and the frontend. 
+The backend is a supabase project and the frontend is a react app.
+ - MyTranscripts.tsx
+ - TagManager.tsx
+ - TranscriptTimeline.tsx
+ 
+<schema>
+Table: transcripts (Schema: public)
+transcript_id (bigint, NOT NULL): Auto-incrementing ID.
+meeting_id (bigint, nullable): Foreign key referencing meetings(meeting_id).
+content (text, nullable): Transcript content.
+recording_id (bigint, nullable): Foreign key referencing recordings(recording_id).
+user_id (string, NOT NULL): Foreign key referencing auth.users(id).
+</schema>
+</ISSUE>
 
-Query the Recordings Table Instead of Storage:
-
-Fetch recordings metadata from the Recordings table, which can provide richer information and easier associations with other data like transcriptions and meetings.
-This approach can also improve performance, especially if you implement pagination or more complex querying.
-Link Recordings with Transcriptions and Meetings:
-
-Utilize the recording_id in the Transcripts table to associate transcriptions with their respective recordings.
-Similarly, associate recordings with Outlook meetings using the meeting_id in the Recordings table.
-Implement Real-Time Updates:
-
-Leverage Supabase's real-time capabilities to update the UI instantly when new recordings are added or existing ones are modified.
-
-Objective: Shift the data source for the MyRecordings page from directly querying Supabase Storage to fetching metadata from the Recordings table. This change will:
-
-Enhance Performance: Fetching metadata from the database is generally faster and more efficient, especially with indexing and optimized queries.
-Improve Data Integrity: Ensures that each recording has associated metadata, reducing inconsistencies.
-Facilitate Advanced Features: Easier to implement features like filtering by meeting, transcription, duration, etc.
-Maintain Scalability: Better handles large datasets with proper database management.
-Impact on Other Modules:
-
-PlaybackComponent: Will now receive the file path from the Recordings table instead of constructing it from storage listings.
-Dashboard Management: Any component that lists or interacts with recordings will benefit from richer metadata.
-Real-time Updates: Leveraging Supabase's real-time capabilities with the Recordings table for instant UI updates.
-
-</Feature Implementation>
 {get_tree_structure()}
 
         """
