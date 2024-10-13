@@ -199,7 +199,7 @@ const MyRecordings: React.FC = () => {
       {filteredRecordings.length === 0 ? (
         <p className="text-center py-4">No recordings found. Try creating a new recording or adjusting your tag filters.</p>
       ) : viewMode === 'list' ? (
-        <div className="bg-white shadow-md rounded-lg overflow-hidden" style={{ minHeight: '300px' }}>
+        <div className="bg-white shadow-md rounded-lg overflow-visible">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -256,7 +256,7 @@ const MyRecordings: React.FC = () => {
                         <MoreVertical className="h-5 w-5" />
                       </button>
                       {activeMenu === recording.recording_id && (
-                        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
                           <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                             <button
                               onClick={() => handleAction('play', recording.recording_id)}

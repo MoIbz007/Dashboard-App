@@ -11,6 +11,7 @@ import ChatbotPage from './pages/ChatbotPage'
 import MyWorkspace from './pages/MyWorkspace'
 import Login from './pages/Login'
 import { AuthProvider, useAuth } from './components/AuthProvider'
+import { UserProvider } from './context/UserContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import { signOut } from './lib/supabaseClient'
 
@@ -37,9 +38,11 @@ function App() {
 
   return (
     <AuthProvider>
-      <Router>
-        <AppContent darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-      </Router>
+      <UserProvider>
+        <Router>
+          <AppContent darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+        </Router>
+      </UserProvider>
     </AuthProvider>
   )
 }

@@ -1,160 +1,123 @@
 import { createClient } from '@supabase/supabase-js'
+import { CalendarEvent, Meeting } from './types'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase URL or anon key. Please check your environment variables.')
-}
-
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-export const initSupabase = async () => {
-  try {
-    const { data, error } = await supabase.from('meetings').select('count')
-    if (error) throw error
-    console.log('Supabase connection successful')
+export async function getMeetings(userId: string): Promise<Meeting[]> {
+  console.log('Fetching meetings for user:', userId)
+  
+  // Check if the meetings table exists
+  const { data: tableInfo, error: tableError } = await supabase
+    .from('meetings')
+    .select('*')
+    .limit(1)
 
-    // Check if the 'recordings' bucket exists, create it if it doesn't
-    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
-    if (bucketsError) throw bucketsError
+  if (tableError) {
+    console.error('Error checking meetings table:', tableError)
+    return []
+  }
 
-    const recordingsBucketExists = buckets.some(bucket => bucket.name === 'recordings')
-    if (!recordingsBucketExists) {
-      const { data: newBucket, error: createBucketError } = await supabase.storage.createBucket('recordings', { public: false })
-      if (createBucketError) throw createBucketError
-      console.log('Created recordings bucket')
-    }
+  if (!tableInfo || tableInfo.length === 0) {
+    console.error('Meetings table does not exist or is empty')
+    return []
+  }
 
-    return true
-  } catch (error) {
-    console.error('Error connecting to Supabase:', error)
-    return false
+  const { data, error } = await supabase
+    .from('meetings')
+    .select('*')
+    .eq('user_id', userId)
+  
+  if (error) {
+    console.error('Error fetching meetings:', error)
+    console.error('Error details:', error.details)
+    console.error('Error hint:', error.hint)
+    return []
+  }
+  
+  console.log('Fetched meetings:', data)
+  return data || []
+}
+
+export async function getOutlookEvents(userId: string): Promise<CalendarEvent[]> {
+  const { data, error } = await supabase
+    .from('calendar_events')
+    .select('*')
+    .eq('source', 'outlook')
+    .eq('user_id', userId)
+  
+  if (error) {
+    console.error('Error fetching Outlook events:', error)
+    return []
+  }
+  
+  return data.map((event: any) => ({
+    ...event,
+    start_time: new Date(event.start_time),
+    end_time: new Date(event.end_time),
+    created_at: new Date(event.created_at),
+    updated_at: new Date(event.updated_at),
+    last_synced: new Date(event.last_synced),
+  })) || []
+}
+
+export async function createEvent(event: Partial<CalendarEvent>, user_id: string): Promise<CalendarEvent | null> {
+  const eventWithUserId = { ...event, user_id }
+  const { data, error } = await supabase
+    .from('calendar_events')
+    .insert([eventWithUserId])
+    .single()
+
+  if (error) {
+    console.error('Error creating event:', error)
+    throw error
+  }
+
+  return data as CalendarEvent
+}
+
+export async function updateEvent(event: CalendarEvent): Promise<CalendarEvent | null> {
+  const { data, error } = await supabase
+    .from('calendar_events')
+    .update(event)
+    .eq('id', event.id)
+    .single()
+
+  if (error) {
+    console.error('Error updating event:', error)
+    throw error
+  }
+
+  return data as CalendarEvent
+}
+
+export async function deleteEvent(eventId: string): Promise<void> {
+  const { error } = await supabase
+    .from('calendar_events')
+    .delete()
+    .eq('id', eventId)
+
+  if (error) {
+    console.error('Error deleting event:', error)
+    throw error
   }
 }
 
-export interface Meeting {
-  meeting_id?: number
-  meeting_title: string
-  date_time: string
-  duration?: number
-  organizer_id?: number
-  agenda?: string
-  scheduled_meeting?: boolean
-}
+export async function getChatbotResponse(message: string): Promise<string> {
+  // This is a placeholder implementation. You'll need to replace this
+  // with actual logic to interact with your chatbot service via Supabase.
+  const { data, error } = await supabase
+    .from('chatbot_responses')
+    .select('response')
+    .eq('input', message)
+    .single()
 
-export interface Recording {
-  recording_id?: number
-  user_id: string
-  file_path: string
-  created_at?: string
-  meeting_id?: number
-  transcript_id?: number
-  duration: number
-  name?: string
-  tag?: string // Added tag property
-}
-
-export interface Transcript {
-  transcript_id?: number
-  meeting_id?: number
-  content?: string
-  recording_id?: number
-}
-
-// Helper function to check if Supabase client is initialized
-const checkSupabaseClient = () => {
-  if (!supabase) {
-    throw new Error('Supabase client is not initialized. Please check your environment variables.')
+  if (error) {
+    console.error('Error fetching chatbot response:', error)
+    return "I'm sorry, I couldn't process your request at the moment."
   }
-}
 
-export const createMeeting = async (meeting: Meeting) => {
-  checkSupabaseClient()
-  const { data, error } = await supabase!.from('meetings').insert(meeting).single()
-  if (error) throw error
-  return data
-}
-
-export const getMeetings = async () => {
-  checkSupabaseClient()
-  const { data, error } = await supabase!.from('meetings').select('*')
-  if (error) throw error
-  return data
-}
-
-export const updateMeeting = async (meeting_id: number, updates: Partial<Meeting>) => {
-  checkSupabaseClient()
-  const { data, error } = await supabase!.from('meetings').update(updates).eq('meeting_id', meeting_id).single()
-  if (error) throw error
-  return data
-}
-
-export const deleteMeeting = async (meeting_id: number) => {
-  checkSupabaseClient()
-  const { error } = await supabase!.from('meetings').delete().eq('meeting_id', meeting_id)
-  if (error) throw error
-}
-
-export const createRecording = async (recording: Recording) => {
-  checkSupabaseClient()
-  const { data, error } = await supabase!.from('recordings').insert(recording).single()
-  if (error) throw error
-  return data
-}
-
-export const getRecordings = async () => {
-  checkSupabaseClient()
-  const { data, error } = await supabase!.from('recordings').select('*')
-  if (error) throw error
-  return data
-}
-
-export const updateRecording = async (recording_id: number, updates: Partial<Recording>) => {
-  checkSupabaseClient()
-  const { data, error } = await supabase!.from('recordings').update(updates).eq('recording_id', recording_id).single()
-  if (error) throw error
-  return data
-}
-
-export const deleteRecording = async (recording_id: number) => {
-  checkSupabaseClient()
-  const { error } = await supabase!.from('recordings').delete().eq('recording_id', recording_id)
-  if (error) throw error
-}
-
-export const createTranscript = async (transcript: Transcript) => {
-  checkSupabaseClient()
-  const { data, error } = await supabase!.from('transcripts').insert(transcript).single()
-  if (error) throw error
-  return data
-}
-
-export const getTranscripts = async () => {
-  checkSupabaseClient()
-  const { data, error } = await supabase!.from('transcripts').select('*')
-  if (error) throw error
-  return data
-}
-
-export const updateTranscript = async (transcript_id: number, updates: Partial<Transcript>) => {
-  checkSupabaseClient()
-  const { data, error } = await supabase!.from('transcripts').update(updates).eq('transcript_id', transcript_id).single()
-  if (error) throw error
-  return data
-}
-
-export const deleteTranscript = async (transcript_id: number) => {
-  checkSupabaseClient()
-  const { error } = await supabase!.from('transcripts').delete().eq('transcript_id', transcript_id)
-  if (error) throw error
-}
-
-// Placeholder function for chatbot API call
-export const getChatbotResponse = async (query: string): Promise<string> => {
-  checkSupabaseClient()
-  // TODO: Implement actual API call to Supabase function
-  // For now, we'll return a mock response
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
-  return `This is a placeholder response to: "${query}". In the future, this will be replaced with an actual AI-generated response.`;
+  return data?.response || "I don't have a specific response for that input."
 }
