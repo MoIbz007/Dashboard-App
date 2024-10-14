@@ -1,12 +1,15 @@
-import React from 'react';
+import React from 'react'
+
+type EventType = 'meeting' | 'event' | 'outlook'
+type ImportanceLevel = 'low' | 'medium' | 'high'
 
 interface FilterComponentProps {
-  eventTypes: string[];
-  selectedEventTypes: string[];
-  onEventTypeChange: (eventType: string) => void;
-  importanceLevels: string[];
-  selectedImportance: string[];
-  onImportanceChange: (importance: string) => void;
+  eventTypes: readonly EventType[]
+  selectedEventTypes: EventType[]
+  onEventTypeChange: (eventType: EventType) => void
+  importanceLevels: readonly ImportanceLevel[]
+  selectedImportance: ImportanceLevel[]
+  onImportanceChange: (importance: ImportanceLevel) => void
 }
 
 const FilterComponent: React.FC<FilterComponentProps> = ({
@@ -15,43 +18,48 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   onEventTypeChange,
   importanceLevels,
   selectedImportance,
-  onImportanceChange,
+  onImportanceChange
 }) => {
   return (
-    <div className="mb-4 p-4 bg-gray-100 rounded-md">
-      <h3 className="text-lg font-semibold mb-2">Filters</h3>
-      <div className="flex flex-wrap gap-4">
-        <div>
-          <h4 className="text-sm font-medium mb-1">Event Types</h4>
+    <div className="flex flex-col space-y-4">
+      <div>
+        <h3 className="text-lg font-semibold mb-2">Event Types</h3>
+        <div className="flex flex-wrap gap-2">
           {eventTypes.map((type) => (
-            <label key={type} className="flex items-center mr-4">
-              <input
-                type="checkbox"
-                checked={selectedEventTypes.includes(type)}
-                onChange={() => onEventTypeChange(type)}
-                className="mr-2"
-              />
+            <button
+              key={type}
+              onClick={() => onEventTypeChange(type)}
+              className={`px-3 py-1 rounded-full ${
+                selectedEventTypes.includes(type)
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700'
+              }`}
+            >
               {type}
-            </label>
+            </button>
           ))}
         </div>
-        <div>
-          <h4 className="text-sm font-medium mb-1">Importance</h4>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold mb-2">Importance</h3>
+        <div className="flex flex-wrap gap-2">
           {importanceLevels.map((level) => (
-            <label key={level} className="flex items-center mr-4">
-              <input
-                type="checkbox"
-                checked={selectedImportance.includes(level)}
-                onChange={() => onImportanceChange(level)}
-                className="mr-2"
-              />
+            <button
+              key={level}
+              onClick={() => onImportanceChange(level)}
+              className={`px-3 py-1 rounded-full ${
+                selectedImportance.includes(level)
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-200 text-gray-700'
+              }`}
+            >
               {level}
-            </label>
+            </button>
           ))}
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default FilterComponent;
+export default FilterComponent

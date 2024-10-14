@@ -1,123 +1,80 @@
-import { createClient } from '@supabase/supabase-js'
-import { CalendarEvent, Meeting } from './types'
+import { CalendarEvent } from './types'
+import { supabase } from './supabaseClient'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-export async function getMeetings(userId: string): Promise<Meeting[]> {
-  console.log('Fetching meetings for user:', userId)
-  
-  // Check if the meetings table exists
-  const { data: tableInfo, error: tableError } = await supabase
-    .from('meetings')
-    .select('*')
-    .limit(1)
-
-  if (tableError) {
-    console.error('Error checking meetings table:', tableError)
-    return []
-  }
-
-  if (!tableInfo || tableInfo.length === 0) {
-    console.error('Meetings table does not exist or is empty')
-    return []
-  }
-
-  const { data, error } = await supabase
-    .from('meetings')
-    .select('*')
-    .eq('user_id', userId)
-  
-  if (error) {
-    console.error('Error fetching meetings:', error)
-    console.error('Error details:', error.details)
-    console.error('Error hint:', error.hint)
-    return []
-  }
-  
-  console.log('Fetched meetings:', data)
-  return data || []
-}
-
-export async function getOutlookEvents(userId: string): Promise<CalendarEvent[]> {
+export async function getCalendarEvents(userId: string): Promise<CalendarEvent[]> {
   const { data, error } = await supabase
     .from('calendar_events')
     .select('*')
-    .eq('source', 'outlook')
     .eq('user_id', userId)
-  
-  if (error) {
-    console.error('Error fetching Outlook events:', error)
-    return []
-  }
-  
-  return data.map((event: any) => ({
-    ...event,
-    start_time: new Date(event.start_time),
-    end_time: new Date(event.end_time),
-    created_at: new Date(event.created_at),
-    updated_at: new Date(event.updated_at),
-    last_synced: new Date(event.last_synced),
-  })) || []
-}
-
-export async function createEvent(event: Partial<CalendarEvent>, user_id: string): Promise<CalendarEvent | null> {
-  const eventWithUserId = { ...event, user_id }
-  const { data, error } = await supabase
-    .from('calendar_events')
-    .insert([eventWithUserId])
-    .single()
+    .order('start_time', { ascending: false })
 
   if (error) {
-    console.error('Error creating event:', error)
+    console.error('Error fetching calendar events:', error)
     throw error
   }
 
-  return data as CalendarEvent
+  return data || []
 }
 
-export async function updateEvent(event: CalendarEvent): Promise<CalendarEvent | null> {
+export async function getMeetings(userId: string): Promise<CalendarEvent[]> {
   const { data, error } = await supabase
-    .from('calendar_events')
+    .from('meetings')
+    .select('*')
+    .eq('user_id', userId)
+    .order('start_time', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching meetings:', error)
+    throw error
+  }
+
+  return data.map(meeting => ({
+    ...meeting,
+    type: 'meeting',
+    source: 'manual',
+  })) || []
+}
+
+export async function createEvent(event: Partial<CalendarEvent>, userId: string, type: 'meeting' | 'event'): Promise<CalendarEvent> {
+  const table = type === 'meeting' ? 'meetings' : 'calendar_events'
+  const { data, error } = await supabase
+    .from(table)
+    .insert({ ...event, user_id: userId })
+    .single()
+
+  if (error) {
+    console.error(`Error creating ${type}:`, error)
+    throw error
+  }
+
+  return data
+}
+
+export async function updateEvent(event: CalendarEvent): Promise<CalendarEvent> {
+  const table = event.type === 'meeting' ? 'meetings' : 'calendar_events'
+  const { data, error } = await supabase
+    .from(table)
     .update(event)
     .eq('id', event.id)
     .single()
 
   if (error) {
-    console.error('Error updating event:', error)
+    console.error(`Error updating ${event.type}:`, error)
     throw error
   }
 
-  return data as CalendarEvent
+  return data
 }
 
-export async function deleteEvent(eventId: string): Promise<void> {
+export async function deleteEvent(eventId: string, type: 'meeting' | 'event'): Promise<void> {
+  const table = type === 'meeting' ? 'meetings' : 'calendar_events'
   const { error } = await supabase
-    .from('calendar_events')
+    .from(table)
     .delete()
     .eq('id', eventId)
 
   if (error) {
-    console.error('Error deleting event:', error)
+    console.error(`Error deleting ${type}:`, error)
     throw error
   }
-}
-
-export async function getChatbotResponse(message: string): Promise<string> {
-  // This is a placeholder implementation. You'll need to replace this
-  // with actual logic to interact with your chatbot service via Supabase.
-  const { data, error } = await supabase
-    .from('chatbot_responses')
-    .select('response')
-    .eq('input', message)
-    .single()
-
-  if (error) {
-    console.error('Error fetching chatbot response:', error)
-    return "I'm sorry, I couldn't process your request at the moment."
-  }
-
-  return data?.response || "I don't have a specific response for that input."
 }

@@ -1,136 +1,133 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Loader, AlertCircle, Trash2 } from 'lucide-react';
-import { getChatbotResponse } from '../lib/supabaseService';
+import { getChatbotResponse } from '../lib/chatbotService';
 
 interface Message {
-  type: 'user' | 'ai' | 'error';
-  content: string;
+  id: number;
+  text: string;
+  sender: 'user' | 'bot';
+  timestamp: Date;
 }
 
 const ChatbotPage: React.FC = () => {
-  const [query, setQuery] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
+  const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     scrollToBottom();
-    if (messages.length === 0) {
-      setMessages([
-        {
-          type: 'ai',
-          content: 'Welcome to the AI Chatbot! How can I assist you today?'
-        }
-      ]);
-    }
   }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (query.trim()) {
-      setMessages(prev => [...prev, { type: 'user', content: query }]);
-      setIsLoading(true);
-      try {
-        const response = await getChatbotResponse(query);
-        setMessages(prev => [...prev, { type: 'ai', content: response }]);
-      } catch (error) {
-        setMessages(prev => [...prev, { type: 'error', content: 'An error occurred. Please try again.' }]);
-      } finally {
-        setIsLoading(false);
-        setQuery('');
-        inputRef.current?.focus();
-      }
+  const handleSendMessage = async () => {
+    if (inputMessage.trim() === '') return;
+
+    const userMessage: Message = {
+      id: Date.now(),
+      text: inputMessage,
+      sender: 'user',
+      timestamp: new Date(),
+    };
+
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    setInputMessage('');
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const botResponse = await getChatbotResponse(inputMessage);
+      const botMessage: Message = {
+        id: Date.now(),
+        text: botResponse,
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
+    } catch (err) {
+      setError('Failed to get response from the chatbot. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleClearChat = () => {
-    setMessages([]);
-    inputRef.current?.focus();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      handleSendMessage();
     }
+  };
+
+  const clearChat = () => {
+    setMessages([]);
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-100">
-      <header className="bg-white shadow-sm p-4">
-        <h1 className="text-2xl font-bold text-gray-800">AI Chatbot</h1>
-      </header>
-      <main className="flex-grow p-4 overflow-hidden flex flex-col" role="main">
-        <div 
-          className="flex-grow overflow-auto mb-4 bg-white rounded-lg shadow p-4"
-          aria-live="polite"
-          aria-atomic="false"
-          aria-relevant="additions"
-        >
-          {messages.map((message, index) => (
+    <div className="flex flex-col h-full bg-gray-100 dark:bg-gray-900">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={`flex ${
+              message.sender === 'user' ? 'justify-end' : 'justify-start'
+            }`}
+          >
             <div
-              key={index}
-              className={`mb-4 ${
-                message.type === 'user' ? 'text-right' : 'text-left'
+              className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl px-4 py-2 rounded-lg ${
+                message.sender === 'user'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white'
               }`}
             >
-              <div
-                className={`inline-block p-3 rounded-lg ${
-                  message.type === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : message.type === 'ai'
-                    ? 'bg-gray-200 text-gray-800'
-                    : 'bg-red-100 text-red-800'
-                }`}
-                role={message.type === 'error' ? 'alert' : 'none'}
-              >
-                {message.type === 'error' && <AlertCircle className="inline mr-2" size={16} aria-hidden="true" />}
-                {message.content}
-              </div>
+              <p>{message.text}</p>
+              <p className="text-xs mt-1 text-gray-200 dark:text-gray-400">
+                {message.timestamp.toLocaleTimeString()}
+              </p>
             </div>
-          ))}
-          <div ref={messagesEndRef} tabIndex={-1} />
-        </div>
-        <form onSubmit={handleSubmit} className="flex items-center">
-          <label htmlFor="chat-input" className="sr-only">Type your message</label>
-          <input
-            id="chat-input"
-            type="text"
-            ref={inputRef}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type your message..."
-            className="flex-grow p-3 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-            disabled={isLoading}
-            aria-disabled={isLoading}
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-center">
+            <Loader className="animate-spin text-blue-500" />
+          </div>
+        )}
+        {error && (
+          <div className="flex justify-center text-red-500">
+            <AlertCircle className="mr-2" />
+            <p>{error}</p>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+      <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex space-x-2">
+          <textarea
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Type your message here..."
+            className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            rows={1}
           />
           <button
-            type="submit"
-            className="bg-blue-600 text-white p-3 rounded-r-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
+            onClick={handleSendMessage}
             disabled={isLoading}
-            aria-disabled={isLoading}
-            aria-label={isLoading ? "Sending message" : "Send message"}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           >
-            {isLoading ? <Loader className="animate-spin" aria-hidden="true" /> : <Send aria-hidden="true" />}
+            <Send />
           </button>
-        </form>
-      </main>
-      <footer className="bg-white shadow-sm p-4 mt-auto">
-        <button
-          onClick={handleClearChat}
-          className="flex items-center justify-center w-full bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600"
-          aria-label="Clear chat history"
-        >
-          <Trash2 className="mr-2" size={16} aria-hidden="true" />
-          Clear Chat
-        </button>
-      </footer>
+          <button
+            onClick={clearChat}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            <Trash2 />
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,17 +1,48 @@
+export interface User {
+  id: string;
+  email: string;
+  // Add other user properties as needed
+}
+
+export interface Recording {
+  recording_id: number;
+  user_id: string;
+  file_path: string;
+  created_at: string;
+  meeting_id: number | null;
+  transcript_id: number | null;
+  duration: number;
+  name: string | null;
+  tags: string[];
+  content?: string | null;
+}
+
+export interface Transcript {
+  transcript_id: number;
+  user_id: string;
+  recording_id: number | null;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  tags: string[];
+}
+
+export type MeetingType = 'one_on_one' | 'group' | 'conference' | 'other';
+
 export interface CalendarEvent {
   id: string;
   user_id: string;
-  event_id: string | null;
+  event_id: string;
+  type: 'meeting' | 'event' | 'outlook';
   source: string;
   title: string;
   description: string | null;
   start_time: Date;
   end_time: Date;
   all_day: boolean;
-  is_meeting: boolean;
-  importance: string | null;
+  importance: 'low' | 'medium' | 'high';
   organizer: string | null;
-  attendees: any[] | null;
+  attendees: string[] | null;
   recurrence: any | null;
   reminders: any[] | null;
   created_at: Date;
@@ -23,21 +54,17 @@ export interface Meeting {
   id: string;
   user_id: string;
   calendar_event_id: string;
-  ms_teams_id: string | null;
-  meeting_url: string | null;
-  meeting_type: string | null;
-  organizer_email: string | null;
+  meeting_type: MeetingType;
   agenda: string | null;
-  minutes: string | null;
-  action_items: any[] | null; // Consider creating a more specific type for action items
-  start_time: Date;
-  end_time: Date;
+  start_time: string;
+  end_time: string;
   all_day: boolean;
-  importance: string | null;
-  attendees: any[] | null;
+  importance: 'low' | 'medium' | 'high';
+  organizer_email: string | null;
+  attendees: string[] | null;
   recurrence: any | null;
   reminders: any[] | null;
-  created_at: Date;
-  updated_at: Date;
-  last_synced: Date;
+  created_at: string;
+  updated_at: string;
+  last_synced: string;
 }
