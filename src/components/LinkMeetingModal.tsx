@@ -32,23 +32,23 @@ const LinkMeetingModal: React.FC<LinkMeetingModalProps> = ({ isOpen, onClose, on
 
       const query = supabase
         .from('meetings')
-        .select(`
-          *,
-          meeting_types (
-            type_name
-          )
-        `)
+        .select('*')
         .eq('user_id', userId)
         .order('start_time', { ascending: false });
 
-      console.log('Query parameters:', {
+      // Log query details
+      console.log('Query details:', {
         table: 'meetings',
-        select: '*,meeting_types(type_name)',
+        select: '*',
         filter: `user_id = ${userId}`,
         order: 'start_time DESC'
       });
 
       const { data, error } = await query;
+
+      console.log('Query execution complete');
+      console.log('Error:', error);
+      console.log('Raw data received:', data);
 
       if (error) {
         throw error;
@@ -58,11 +58,13 @@ const LinkMeetingModal: React.FC<LinkMeetingModalProps> = ({ isOpen, onClose, on
       console.log('Number of meetings found:', data ? data.length : 0);
 
       setMeetings(data || []);
+      console.log('State updated with meetings:', data || []);
     } catch (error) {
       console.error('Error fetching meetings:', error);
       setError('Failed to fetch meetings. Please try again.');
     } finally {
       setLoading(false);
+      console.log('Loading state set to false');
     }
   };
 
@@ -112,7 +114,7 @@ const LinkMeetingModal: React.FC<LinkMeetingModalProps> = ({ isOpen, onClose, on
                     className="cursor-pointer hover:bg-gray-100 p-2 rounded"
                     onClick={() => handleLinkMeeting(meeting.id)}
                   >
-                    {meeting.meeting_type?.type_name || 'Untitled Meeting'} - {new Date(meeting.start_time).toLocaleString()}
+                    {meeting.meeting_type || 'Untitled Meeting'} - {new Date(meeting.start_time).toLocaleString()}
                   </li>
                 ))}
               </ul>

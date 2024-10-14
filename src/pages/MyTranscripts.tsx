@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { useAuth } from '../components/AuthProvider'
 import TranscriptTimeline from '../components/TranscriptTimeline'
-import TagManager from '../components/TagManager'
 import { Clock, List, Tag } from 'react-feather'
 import NewNoteModal from '../components/NewNoteModal'
 import LinkMeetingModal from '../components/LinkMeetingModal'
@@ -115,9 +114,13 @@ const MyTranscripts: React.FC = () => {
 
   const toggleViewMode = () => setViewMode(viewMode === 'list' ? 'timeline' : 'list')
 
-  const handleAddTag = (tag: string) => setSelectedTags([...selectedTags, tag])
-
-  const handleRemoveTag = (tag: string) => setSelectedTags(selectedTags.filter((t: string) => t !== tag))
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prevTags => 
+      prevTags.includes(tag)
+        ? prevTags.filter(t => t !== tag)
+        : [...prevTags, tag]
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -131,22 +134,27 @@ const MyTranscripts: React.FC = () => {
             {viewMode === 'list' ? <Clock className="mr-2" /> : <List className="mr-2" />}
             {viewMode === 'list' ? 'Timeline View' : 'List View'}
           </button>
-          <button
-            onClick={() => setSelectedTags([])}
-            className="flex items-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-          >
-            <Tag className="mr-2" />
-            Manage Tags
-          </button>
         </div>
       </div>
 
-      <TagManager
-        tags={selectedTags}
-        allTags={allTags}
-        onAddTag={handleAddTag}
-        onRemoveTag={handleRemoveTag}
-      />
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold mb-2">Filter by Tags</h2>
+        <div className="flex flex-wrap gap-2">
+          {allTags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => toggleTag(tag)}
+              className={`px-3 py-1 rounded-full ${
+                selectedTags.includes(tag)
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700'
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {loading && <p className="text-center py-4">Loading transcripts...</p>}
       {error && (
@@ -156,7 +164,7 @@ const MyTranscripts: React.FC = () => {
         </div>
       )}
       {!loading && !error && filteredTranscripts.length === 0 && (
-        <p className="text-center py-4">No transcripts found. Try creating a new transcript or adjusting your tag filters.</p>
+        <p className="text-center py-4">No transcripts found. Try adjusting your tag filters.</p>
       )}
 
       {viewMode === 'list' ? (

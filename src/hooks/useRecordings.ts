@@ -87,11 +87,11 @@ export const useRecordings = () => {
   }, [selectedTags, recordings])
 
   const handleAddTag = (tag: string) => {
-    setSelectedTags([...selectedTags, tag])
+    setSelectedTags(prevTags => [...prevTags, tag])
   }
 
   const handleRemoveTag = (tag: string) => {
-    setSelectedTags(selectedTags.filter(t => t !== tag))
+    setSelectedTags(prevTags => prevTags.filter(t => t !== tag))
   }
 
   return {

@@ -2,8 +2,7 @@ import React, { useState } from 'react'
 import { useRecordings } from '../hooks/useRecordings'
 import RecordingList from '../components/RecordingList'
 import RecordingTimeline from '../components/RecordingTimeline'
-import TagManager from '../components/TagManager'
-import { Clock, List, Tag } from 'react-feather'
+import { Clock, List } from 'react-feather'
 
 const MyRecordings: React.FC = () => {
   const {
@@ -17,14 +16,9 @@ const MyRecordings: React.FC = () => {
   } = useRecordings()
 
   const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list')
-  const [showTagManager, setShowTagManager] = useState(false)
 
   const toggleViewMode = () => {
     setViewMode(viewMode === 'list' ? 'timeline' : 'list')
-  }
-
-  const toggleTagManager = () => {
-    setShowTagManager(!showTagManager)
   }
 
   const handleActionClick = (action: string, recordingId: number) => {
@@ -43,6 +37,14 @@ const MyRecordings: React.FC = () => {
         break
       default:
         console.log(`Unknown action ${action} for recording ${recordingId}`)
+    }
+  }
+
+  const toggleTag = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      handleRemoveTag(tag)
+    } else {
+      handleAddTag(tag)
     }
   }
 
@@ -66,29 +68,30 @@ const MyRecordings: React.FC = () => {
             {viewMode === 'list' ? <Clock className="mr-2" /> : <List className="mr-2" />}
             {viewMode === 'list' ? 'Timeline View' : 'List View'}
           </button>
-          <button
-            onClick={toggleTagManager}
-            className="flex items-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-          >
-            <Tag className="mr-2" />
-            Manage Tags
-          </button>
         </div>
       </div>
 
-      {showTagManager && (
-        <div className="mb-6">
-          <TagManager
-            tags={selectedTags}
-            allTags={allTags}
-            onAddTag={handleAddTag}
-            onRemoveTag={handleRemoveTag}
-          />
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold mb-2">Filter by Tags</h2>
+        <div className="flex flex-wrap gap-2">
+          {allTags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => toggleTag(tag)}
+              className={`px-3 py-1 rounded-full ${
+                selectedTags.includes(tag)
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700'
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
 
       {filteredRecordings.length === 0 ? (
-        <p className="text-center py-4">No recordings found. Try creating a new recording or adjusting your tag filters.</p>
+        <p className="text-center py-4">No recordings found. Try adjusting your tag filters.</p>
       ) : viewMode === 'list' ? (
         <RecordingList
           recordings={filteredRecordings}
