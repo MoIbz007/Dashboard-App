@@ -1,4 +1,4 @@
-import { CalendarEvent } from './types'
+import { CalendarEvent, Recording } from './types'
 import { supabase } from './supabaseClient'
 
 export async function getCalendarEvents(userId: string): Promise<CalendarEvent[]> {
@@ -75,6 +75,32 @@ export async function deleteEvent(eventId: string, type: 'meeting' | 'event'): P
 
   if (error) {
     console.error(`Error deleting ${type}:`, error)
+    throw error
+  }
+}
+
+export async function getRecordings(): Promise<Recording[]> {
+  const { data, error } = await supabase
+    .from('recordings')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching recordings:', error)
+    throw error
+  }
+
+  return data || []
+}
+
+export async function deleteRecording(id: number): Promise<void> {
+  const { error } = await supabase
+    .from('recordings')
+    .delete()
+    .eq('recording_id', id)
+
+  if (error) {
+    console.error('Error deleting recording:', error)
     throw error
   }
 }

@@ -9,12 +9,12 @@ export interface Recording {
   user_id: string;
   file_path: string;
   created_at: string;
-  meeting_id: number | null;
-  transcript_id: number | null;
+  meeting_id?: number | null;
+  transcript_id?: number | null;
   duration: number;
   name: string | null;
-  tags: string[];
-  content?: string | null;
+  content?: string;
+  tags?: string[];
 }
 
 export interface Transcript {
