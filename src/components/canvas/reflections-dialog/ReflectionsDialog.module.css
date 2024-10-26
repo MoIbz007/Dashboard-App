@@ -1,0 +1,51 @@
+.dialog {
+  @apply fixed inset-0 z-50 flex items-center justify-center;
+}
+
+.overlay {
+  @apply fixed inset-0 bg-black/50;
+}
+
+.content {
+  @apply bg-white rounded-lg shadow-lg w-full max-w-2xl;
+}
+
+.header {
+  @apply flex items-center justify-between p-4 border-b;
+}
+
+.title {
+  @apply text-lg font-semibold;
+}
+
+.body {
+  @apply p-4 space-y-4 max-h-[60vh] overflow-y-auto;
+}
+
+.section {
+  @apply space-y-2;
+}
+
+.sectionTitle {
+  @apply font-medium mb-2;
+}
+
+.list {
+  @apply list-disc pl-5 space-y-1;
+}
+
+.listItem {
+  @apply text-sm text-gray-700;
+}
+
+.emptyState {
+  @apply text-gray-500 text-center;
+}
+
+.actions {
+  @apply flex items-center space-x-2;
+}
+
+.actionButton {
+  @apply p-2 rounded-lg hover:bg-gray-100 transition-colors;
+}

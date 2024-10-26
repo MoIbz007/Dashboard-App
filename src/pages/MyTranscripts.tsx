@@ -17,8 +17,7 @@ const MyTranscripts: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [isNewNoteModalOpen, setIsNewNoteModalOpen] = useState(false)
-  const [isLinkMeetingModalOpen, setIsLinkMeetingModalOpen] = useState(false)
-  const [selectedTranscript, setSelectedTranscript] = useState<Transcript | null>(null)
+  const [isLinkMeetingModalOpen, setIsLinkMeetingModalOpen, setSelectedTranscript] = useState<Transcript | null>(null)
   const [isCreatingNote, setIsCreatingNote] = useState(false)
 
   const handleAction = useCallback((action: string, transcriptId: number) => {
@@ -101,8 +100,8 @@ const MyTranscripts: React.FC = () => {
         if (recordingError) throw recordingError
       }
 
+      console.log(`Transcript ${selectedTranscript.transcript_id} linked to meeting ${meetingId}`)
       toast.success('Transcript linked to meeting successfully!')
-      await fetchTranscripts()
     } catch (error) {
       console.error('Error linking transcript to meeting:', error)
       toast.error('Failed to link transcript to meeting. Please try again.')
@@ -112,7 +111,9 @@ const MyTranscripts: React.FC = () => {
     }
   }
 
-  const toggleViewMode = () => setViewMode(viewMode === 'list' ? 'timeline' : 'list')
+  const toggleViewMode = () => {
+    setViewMode(prevMode => (prevMode === 'list' ? 'timeline' : 'list'))
+  }
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prevTags => 
@@ -156,31 +157,36 @@ const MyTranscripts: React.FC = () => {
         </div>
       </div>
 
-      {loading && <p className="text-center py-4">Loading transcripts...</p>}
+      {loading && (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      )}
+
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Error:</strong>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <strong className="font-bold">Error: </strong>
           <span className="block sm:inline">{error}</span>
         </div>
       )}
+
       {!loading && !error && filteredTranscripts.length === 0 && (
-        <p className="text-center py-4">No transcripts found. Try adjusting your tag filters.</p>
+        <div className="text-center py-8">
+          <p className="text-gray-500">No transcripts found. Create a new recording to get started.</p>
+        </div>
       )}
 
       {viewMode === 'list' ? (
         <TranscriptList transcripts={filteredTranscripts} onActionClick={handleAction} />
       ) : (
-        <TranscriptTimeline 
-          transcripts={filteredTranscripts.map(t => ({...t, created_at: t.created_at}))} 
-          onActionClick={(e, transcriptId) => handleAction(e.type, transcriptId)} 
-        />
+        <TranscriptTimeline transcripts={filteredTranscripts} onActionClick={handleAction} />
       )}
 
       <NewNoteModal
         isOpen={isNewNoteModalOpen}
         onClose={() => {
-          setIsNewNoteModalOpen(false)
-          setSelectedTranscript(null)
+          setIsNewNoteModalOpen(false);
+          setSelectedTranscript(null);
         }}
         onSave={handleCreateNote}
         initialContent={selectedTranscript?.content || ''}
@@ -191,8 +197,8 @@ const MyTranscripts: React.FC = () => {
       <LinkMeetingModal
         isOpen={isLinkMeetingModalOpen}
         onClose={() => {
-          setIsLinkMeetingModalOpen(false)
-          setSelectedTranscript(null)
+          setIsLinkMeetingModalOpen(false);
+          setSelectedTranscript(null);
         }}
         onLink={handleLinkMeeting}
         userId={user?.id || ''}

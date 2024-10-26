@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient'
+import { supabase } from './supabaseClient';
 
 // Keep existing code
 
@@ -10,14 +10,14 @@ export async function getChatbotResponse(message: string): Promise<string> {
       .from('chatbot_responses')
       .select('response')
       .eq('query', message)
-      .single()
+      .single();
 
-    if (error) throw error
+    if (error) throw error;
 
-    return data?.response || "I'm sorry, I couldn't understand that."
+    return data?.response || "I'm sorry, I couldn't understand that.";
   } catch (error) {
-    console.error('Error getting chatbot response:', error)
-    throw error
+    console.error('Error getting chatbot response:', error);
+    throw error;
   }
 }
 

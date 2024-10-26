@@ -1,0 +1,217 @@
+:root {
+  --text-color: #7d84ab;
+  --secondary-text-color: #dee2ec;
+  --bg-color: #0c1e35;
+  --secondary-bg-color: #0b1a2c;
+  --border-color: rgba(83, 93, 125, 0.3);
+  --animation-duration: 300ms;
+}
+
+.sidebar {
+  width: 260px;
+  min-height: 100vh;
+  transition: width var(--animation-duration) ease;
+  position: relative;
+  z-index: 100;
+}
+
+.sidebar.collapsed {
+  width: 80px;
+}
+
+.sidebar-layout {
+  height: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: var(--bg-color);
+  overflow-x: hidden;
+}
+
+#sidebar-collapser {
+  position: absolute;
+  right: -10px;
+  top: 20px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--bg-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  transform: translateX(50%);
+  cursor: pointer;
+  color: var(--secondary-text-color);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  z-index: 111;
+  transition: transform var(--animation-duration) ease;
+}
+
+.collapsed #sidebar-collapser {
+  transform: translateX(50%) rotate(180deg);
+}
+
+.sidebar-header {
+  height: 64px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.app-icon {
+  width: 35px;
+  min-width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background-color: #ff8100;
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
+  margin-right: 10px;
+}
+
+.app-name {
+  color: var(--secondary-text-color);
+  font-size: 20px;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity var(--animation-duration);
+}
+
+.collapsed .app-name {
+  opacity: 0;
+  width: 0;
+}
+
+.sidebar-content {
+  flex-grow: 1;
+  padding: 10px 0;
+}
+
+.menu ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-item a {
+  display: flex;
+  align-items: center;
+  height: 50px;
+  padding: 0 20px;
+  color: var(--text-color);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.menu-item a:hover {
+  color: var(--secondary-text-color);
+  background-color: var(--secondary-bg-color);
+}
+
+.menu-icon {
+  width: 35px;
+  min-width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
+
+.menu-title {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity var(--animation-duration);
+}
+
+.collapsed .menu-title {
+  opacity: 0;
+  width: 0;
+}
+
+.menu-arrow {
+  width: 5px;
+  height: 5px;
+  margin-left: 10px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--animation-duration);
+}
+
+.menu-item.open > a .menu-arrow {
+  transform: rotate(45deg);
+}
+
+.sub-menu-list {
+  max-height: 0;
+  overflow: hidden;
+  background-color: var(--secondary-bg-color);
+  transition: max-height var(--animation-duration) ease;
+}
+
+.menu-item.open > .sub-menu-list {
+  max-height: 1000px;
+}
+
+.sub-menu-list .menu-item a {
+  padding-left: 65px;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.sign-out-btn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px;
+  color: #ff6b6b;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.sign-out-btn:hover {
+  background-color: rgba(255, 107, 107, 0.1);
+}
+
+.sign-out-btn svg {
+  margin-right: 10px;
+}
+
+.collapsed .sign-out-btn span {
+  display: none;
+}
+
+.menu-item.active > a {
+  color: var(--secondary-text-color);
+  background-color: var(--secondary-bg-color);
+}
+
+@keyframes swing {
+  0%, 30%, 50%, 70%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(10deg); }
+  40% { transform: rotate(-10deg); }
+  60% { transform: rotate(5deg); }
+  80% { transform: rotate(-5deg); }
+}
+
+.menu-icon:hover svg {
+  animation: swing 0.5s ease-in-out 1;
+}
