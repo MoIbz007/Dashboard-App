@@ -249,7 +249,7 @@ if __name__ == "__main__":
     # paths = ['./frontend/public','./frontend/src','./supabase/functions']  # Ensure 'src' is a valid directory relative to where the script is run
     paths = ['Dashboard-App/home', 'Dashboard-App/src']
     output_path = 'module_code.md'
-    extensions = ('.py', '.tsx', '.ts', '.js', '.json', '.css', '.svg','.html')  # Add any other extensions you need
+    extensions = ('.py', '.tsx', '.ts')  # Add any other extensions you need
 
     # Enhanced error handling to check if 'src' exists
     for path in paths:
