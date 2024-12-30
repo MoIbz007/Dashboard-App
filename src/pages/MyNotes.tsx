@@ -213,7 +213,7 @@ const MyNotes: React.FC<MyNotesProps> = ({ darkMode }) => {
           <input
             type="text"
             placeholder="Search notes..."
-            className="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -235,7 +235,7 @@ const MyNotes: React.FC<MyNotesProps> = ({ darkMode }) => {
         <div className="flex space-x-4 w-full sm:w-auto">
           <div className="relative">
             <select
-              className="appearance-none bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 px-4 pr-8 rounded-md border border-gray-300 dark:border-gray-600 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="appearance-none bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 px-4 pr-8 rounded-md border border-gray-300 dark:border-gray-600 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as SortOption)}
             >
@@ -254,7 +254,7 @@ const MyNotes: React.FC<MyNotesProps> = ({ darkMode }) => {
           </button>
           <div className="relative">
             <select
-              className="appearance-none bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 px-4 pr-8 rounded-md border border-gray-300 dark:border-gray-600 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="appearance-none bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 py-2 px-4 pr-8 rounded-md border border-gray-300 dark:border-gray-600 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={filterTag || ''}
               onChange={(e) => setFilterTag(e.target.value || null)}
             >
@@ -288,7 +288,7 @@ const MyNotes: React.FC<MyNotesProps> = ({ darkMode }) => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+              className={`bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 ${note.is_pinned ? 'bg-blue-50 dark:bg-blue-900' : ''}`}
             >
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 leading-tight">{note.title}</h2>
@@ -394,7 +394,6 @@ const MyNotes: React.FC<MyNotesProps> = ({ darkMode }) => {
             setIsDeleteModalOpen(false)
           }
         }}
-        noteTitle={deletingNote?.title || ''}
       />
     </div>
   )
